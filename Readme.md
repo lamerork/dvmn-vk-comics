@@ -13,6 +13,7 @@
 
 Python3 должен быть уже установлен. 
 Затем используйте `pip` (или `pip3`, есть конфликт с Python2) для установки зависимостей:
+
 ```commandline
 pip install -r requirements.txt
 ```
@@ -25,6 +26,8 @@ python main.py
 
  Пример работы программы:
  
+<img width="550" alt="1" src="https://github.com/lamerork/dvmn-vk-comics/assets/65411132/2b4749bd-d247-4a47-b148-5d1c2969b5ea">
+
  
 ### Цель проекта
 
