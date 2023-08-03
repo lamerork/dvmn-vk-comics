@@ -35,25 +35,23 @@ def upload_vk_picture(access_token, group_id, filename):
     return response.json()
 
 
-def save_vk_picture(access_token, group_id, upload_reponse):
+def save_vk_picture(access_token, group_id, vk_photo, vk_server, vk_hash):
 
     url = 'https://api.vk.com/method/photos.saveWallPhoto'
     payload = {
         'access_token': access_token,
         'v': 5.131,
         'group_id': group_id,
-        'photo': upload_reponse['photo'],
-        'server': upload_reponse['server'],
-        'hash': upload_reponse['hash'],
+        'photo': vk_photo,
+        'server': vk_server,
+        'hash': vk_hash,
     }
     response = requests.get(url, params=payload)
     response.raise_for_status()
     return response.json()
 
 
-def post_vk_picture(access_token, group_id, save_response, comment):
-    picture_id = save_response["response"][0]['id']
-    owner_id = save_response["response"][0]['owner_id']
+def post_vk_picture(access_token, group_id, picture_id, owner_id, comment):
 
     url = 'https://api.vk.com/method/wall.post'
     payload = {
@@ -78,14 +76,14 @@ def get_picture_extension(image_url):
     return file_extension[1]
 
 
-def get_randon_comic():
+def get_random_comic():
 
     response = requests.get('https://xkcd.com/info.0.json')
     response.raise_for_status()
-    total_comic = response.json()['num']
+    total_comics = response.json()['num']
 
-    number_comic = randint(0, total_comic)
-    response = requests.get(f'https://xkcd.com/{number_comic}/info.0.json')
+    comic_number = randint(0, total_comics)
+    response = requests.get(f'https://xkcd.com/{comic_number}/info.0.json')
     response.raise_for_status()
     random_comic = response.json()
     image_url = random_comic['img']
@@ -104,17 +102,22 @@ def get_randon_comic():
 def main():
 
     load_dotenv()
-    access_token = os.getenv('ACCESS_TOKEN')
-    group_id = os.getenv('GROUP_ID')
-    filename, comment = get_randon_comic()
+    vk_access_token = os.environ['VK_ACCESS_TOKEN']
+    vk_group_id = os.environ['VK_GROUP_ID']
+    filename, comment = get_random_comic()
 
     try:
-        upload_response = upload_vk_picture(access_token, group_id, filename)
+        upload_response = upload_vk_picture(vk_access_token, vk_group_id, filename)
         check_vk_response(upload_response)
-        save_reponse = save_vk_picture(access_token, group_id, upload_response)
-        check_vk_response(save_reponse)
-        post_respons = post_vk_picture(access_token, group_id, save_reponse, comment)
-        check_vk_response(post_respons)
+        vk_photo = upload_response['photo']
+        vk_server = upload_response['server']
+        vk_hash = upload_response['hash']
+        save_response = save_vk_picture(vk_access_token, vk_group_id, vk_photo, vk_server, vk_hash)
+        check_vk_response(save_response)
+        picture_id = save_response["response"][0]["id"]
+        owner_id = save_response["response"][0]["owner_id"]
+        post_response = post_vk_picture(vk_access_token, vk_group_id, picture_id, owner_id, comment)
+        check_vk_response(post_response)
 
     finally:
         os.remove(filename)
